@@ -84,14 +84,13 @@ def generate_pdf(dataframe):
     # Table Rows
     pdf.set_font("Arial", '', 10)
     for index, row in dataframe.iterrows():
-        st.write(f"Processing row {index + 1}: {row.to_dict()}")  # Debugging output
-        # Ensure data is string before passing to cell
+        # Ensure data is string and encode properly for PDF standard fonts to avoid errors
         s_no = str(index + 1)
-        vendor = str(row.get('vendor_name', ''))
-        bill_no = str(row.get('bill_no', ''))
+        vendor = str(row.get('vendor_name', '')).encode('latin-1', 'replace').decode('latin-1')
+        bill_no = str(row.get('bill_no', '')).encode('latin-1', 'replace').decode('latin-1')
         bill_date = str(row.get('bill_date', ''))
         amount = f"${row.get('bill_amount', 0.0):.2f}"
-        doctor = str(row.get('doctor_name', ''))
+        doctor = str(row.get('doctor_name', '')).encode('latin-1', 'replace').decode('latin-1')
 
         pdf.cell(col_widths[0], 10, s_no, border=1)
         pdf.cell(col_widths[1], 10, vendor, border=1)
@@ -101,7 +100,8 @@ def generate_pdf(dataframe):
         pdf.cell(col_widths[5], 10, doctor, border=1)
         pdf.ln()
         
-    # The output method returns bytes, no encoding is needed.
+    # Return the PDF as bytes, which is required by st.download_button
+    # The .output() method with no arguments returns the correct bytes format.
     return pdf.output()
 
 def extract_bill_details_with_gemini(image_bytes):
@@ -285,7 +285,7 @@ else:
         st.error("Error: Start date must be before end date.")
     else:
         # Filter the dataframe
-        mask = (df['bill_date'] >= str(start_date)) & (df['bill_date'] <= str(end_date))
+        mask = (pd.to_datetime(df['bill_date']).dt.date >= start_date) & (pd.to_datetime(df['bill_date']).dt.date <= end_date)
         filtered_df = df.loc[mask]
 
         with filter_col3:
