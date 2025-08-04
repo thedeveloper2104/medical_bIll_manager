@@ -61,7 +61,7 @@ def get_user_id():
 def fetch_doctors(_user_id):
     """Fetches the list of doctors from Supabase for the current user."""
     try:
-        response = supabase.table('doctors').select('id, name').eq('user_id', _user_id).order('name').execute()
+        response = supabase.table('doctors').select('id, name').order('name').execute()
         return response.data
     except Exception as e:
         st.error(f"Error fetching doctors: {e}")
