@@ -295,13 +295,15 @@ else:
             st.write("") # Spacer
             st.write("") # Spacer
             if not filtered_df.empty:
-                pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
-                st.download_button(
-                    label="⬇️ Download as PDF",
-                    data=pdf_data,
-                    file_name=f"Medical_Bills_{start_date}_to_{end_date}.pdf",
-                    mime="application/pdf",
-                )
+                st.subheader("Filtered Bills")
+                st.dataframe(filtered_df[['vendor_name', 'bill_no', 'bill_date', 'bill_amount', 'doctor_name']], use_container_width=True)
+                # pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
+                # st.download_button(
+                #     label="⬇️ Download as PDF",
+                #     data=pdf_data,
+                #     file_name=f"Medical_Bills_{start_date}_to_{end_date}.pdf",
+                #     mime="application/pdf",
+                # )
             else:
                 st.write("No bills in selected date range.")
 
