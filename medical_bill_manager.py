@@ -100,9 +100,8 @@ def generate_pdf(dataframe):
         pdf.cell(col_widths[5], 10, doctor, border=1)
         pdf.ln()
         
-    # FIX: Return the PDF as bytes, which is required by st.download_button.
-    # The .output() method with no arguments returns the correct bytes format.
-    return pdf.output()
+    # FIX: The .output() method returns a bytearray. Convert it to bytes for Streamlit.
+    return bytes(pdf.output())
 
 def extract_bill_details_with_gemini(image_bytes):
     """Uses Gemini API to extract details from a bill image."""
@@ -299,6 +298,13 @@ else:
         if not filtered_df.empty:
             with st.spinner("Generating PDF..."):
                 pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
+                
+                # --- DEBUGGING ---
+                st.info("Debug Info:")
+                st.write(f"Type of generated data for download: `{type(pdf_data)}`")
+                st.write("This should be `<class 'bytes'>`. If so, the download should work.")
+                # --- END DEBUGGING ---
+
                 st.download_button(
                     label="⬇️ Download as PDF",
                     data=pdf_data,
