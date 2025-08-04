@@ -89,7 +89,7 @@ def generate_pdf(dataframe):
         vendor = str(row.get('vendor_name', '')).encode('latin-1', 'replace').decode('latin-1')
         bill_no = str(row.get('bill_no', '')).encode('latin-1', 'replace').decode('latin-1')
         bill_date = str(row.get('bill_date', ''))
-        amount = f"${row.get('bill_amount', 0.0):.2f}"
+        amount = f"₹{row.get('bill_amount', 0.0):.2f}"
         doctor = str(row.get('doctor_name', '')).encode('latin-1', 'replace').decode('latin-1')
 
         pdf.cell(col_widths[0], 10, s_no, border=1)
@@ -298,12 +298,6 @@ else:
         if not filtered_df.empty:
             with st.spinner("Generating PDF..."):
                 pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
-                
-                # --- DEBUGGING ---
-                st.info("Debug Info:")
-                st.write(f"Type of generated data for download: `{type(pdf_data)}`")
-                st.write("This should be `<class 'bytes'>`. If so, the download should work.")
-                # --- END DEBUGGING ---
 
                 st.download_button(
                     label="⬇️ Download as PDF",
