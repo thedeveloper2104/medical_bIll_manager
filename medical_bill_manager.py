@@ -84,6 +84,7 @@ def generate_pdf(dataframe):
     # Table Rows
     pdf.set_font("Arial", '', 10)
     for index, row in dataframe.iterrows():
+        st.print(f"Processing row {index + 1}: {row.to_dict()}")  # Debugging output
         # Ensure data is string before passing to cell
         s_no = str(index + 1)
         vendor = str(row.get('vendor_name', ''))
