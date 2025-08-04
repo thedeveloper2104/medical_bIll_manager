@@ -43,23 +43,11 @@ except (KeyError, FileNotFoundError):
     GEMINI_API_KEY = None
 
 
-# --- User Session Simulation ---
-# Streamlit reruns the script on each interaction. We use session_state to maintain state.
-# In a real multi-user app, you would use Supabase Auth.
-if 'user_id' not in st.session_state:
-    # This creates a persistent "session" for a single user of the app.
-    st.session_state.user_id = str(uuid.uuid4())
-
-
 # --- Data Models & Functions ---
 
-def get_user_id():
-    """Returns the simulated user ID for the current session."""
-    return st.session_state.user_id
-
 @st.cache_data(ttl=300) # Cache data for 5 minutes
-def fetch_doctors(_user_id):
-    """Fetches the list of doctors from Supabase for the current user."""
+def fetch_doctors():
+    """Fetches the list of doctors from Supabase."""
     try:
         response = supabase.table('doctors').select('id, name').order('name').execute()
         return response.data
@@ -68,8 +56,8 @@ def fetch_doctors(_user_id):
         return []
 
 @st.cache_data(ttl=60) # Cache bills for 1 minute
-def fetch_bills(_user_id):
-    """Fetches the list of bills from Supabase for the current user."""
+def fetch_bills():
+    """Fetches the list of bills from Supabase."""
     try:
         response = supabase.table('bills').select('*').order('bill_date', desc=True).execute()
         return response.data
@@ -153,7 +141,7 @@ st.markdown("An application to scan, track, and manage your medical bills using 
 with st.sidebar:
     st.header("👨‍⚕️ Manage Doctors")
     
-    doctors = fetch_doctors(get_user_id())
+    doctors = fetch_doctors()
     doctor_names = [doc['name'] for doc in doctors]
     
     with st.form("add_doctor_form", clear_on_submit=True):
@@ -164,7 +152,7 @@ with st.sidebar:
                 st.warning("This doctor already exists.")
             else:
                 try:
-                    supabase.table('doctors').insert({'name': new_doctor_name, 'user_id': get_user_id()}).execute()
+                    supabase.table('doctors').insert({'name': new_doctor_name}).execute()
                     st.success(f"Added Dr. {new_doctor_name}")
                     st.cache_data.clear() # Clear cache to refetch
                 except Exception as e:
@@ -248,8 +236,7 @@ with col2:
                     'bill_no': bill_no,
                     'bill_date': str(bill_date),
                     'bill_amount': bill_amount,
-                    'doctor_name': selected_doctor,
-                    'user_id': get_user_id()
+                    'doctor_name': selected_doctor
                 }
                 try:
                     supabase.table('bills').insert(bill_data).execute()
@@ -266,7 +253,7 @@ st.divider()
 # --- Display Bills Table ---
 st.header("📋 My Bills")
 
-bills = fetch_bills(get_user_id())
+bills = fetch_bills()
 
 if not bills:
     st.info("No bills found. Add your first bill to get started!")
@@ -294,18 +281,23 @@ else:
         with filter_col3:
             st.write("") # Spacer
             st.write("") # Spacer
-            if not filtered_df.empty:
-                st.subheader("Filtered Bills")
-                st.dataframe(filtered_df[['vendor_name', 'bill_no', 'bill_date', 'bill_amount', 'doctor_name']], use_container_width=True)
-                # pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
-                # st.download_button(
-                #     label="⬇️ Download as PDF",
-                #     data=pdf_data,
-                #     file_name=f"Medical_Bills_{start_date}_to_{end_date}.pdf",
-                #     mime="application/pdf",
-                # )
-            else:
-                st.write("No bills in selected date range.")
+            # This button will now trigger the PDF generation.
+            generate_button = st.button("Generate PDF Report")
+
+    # Only generate and offer download if the button is clicked and data is available
+    if 'generate_button' in locals() and generate_button:
+        if not filtered_df.empty:
+            with st.spinner("Generating PDF..."):
+                pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
+                st.download_button(
+                    label="⬇️ Download as PDF",
+                    data=pdf_data,
+                    file_name=f"Medical_Bills_{start_date}_to_{end_date}.pdf",
+                    mime="application/pdf",
+                )
+        else:
+            st.warning("No bills in the selected date range to generate a report.")
+
 
     st.dataframe(df_display, use_container_width=True)
     
@@ -328,4 +320,3 @@ else:
                 st.rerun()
             except Exception as e:
                 st.error(f"Failed to delete bill: {e}")
-
