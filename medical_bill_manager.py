@@ -19,7 +19,7 @@ import uuid
 # --- Page Configuration ---
 st.set_page_config(
     page_title="Medical Bill Manager",
-    page_icon="🧾",
+    page_icon="�",
     layout="wide"
 )
 
@@ -100,7 +100,7 @@ def generate_pdf(dataframe):
         pdf.cell(col_widths[5], 10, doctor, border=1)
         pdf.ln()
         
-    # FIX: The .output() method returns a bytearray. Convert it to bytes for Streamlit.
+    # Return the PDF as bytes, which is required by st.download_button.
     return bytes(pdf.output())
 
 def extract_bill_details_with_gemini(image_bytes):
@@ -286,28 +286,25 @@ else:
         # Filter the dataframe
         mask = (pd.to_datetime(df['bill_date']).dt.date >= start_date) & (pd.to_datetime(df['bill_date']).dt.date <= end_date)
         filtered_df = df.loc[mask]
+        
+        pdf_data = None
+        if not filtered_df.empty:
+            # Generate the PDF data in memory if there are bills to report
+            pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
 
         with filter_col3:
-            st.write("") # Spacer
-            st.write("") # Spacer
-            # This button will now trigger the PDF generation.
-            generate_button = st.button("Generate PDF Report")
+            st.write("") # Spacer for alignment
+            st.write("") # Spacer for alignment
+            st.download_button(
+               label="⬇️ Generate & Download PDF",
+               data=pdf_data if pdf_data else b"",  # Provide empty bytes if no data
+               file_name=f"Medical_Bills_{start_date}_to_{end_date}.pdf",
+               mime="application/pdf",
+               disabled=not pdf_data  # Disable button if no data
+            )
 
-    # Only generate and offer download if the button is clicked and data is available
-    if 'generate_button' in locals() and generate_button:
-        if not filtered_df.empty:
-            with st.spinner("Generating PDF..."):
-                pdf_data = generate_pdf(filtered_df.reset_index(drop=True))
-
-                st.download_button(
-                    label="⬇️ Download as PDF",
-                    data=pdf_data,
-                    file_name=f"Medical_Bills_{start_date}_to_{end_date}.pdf",
-                    mime="application/pdf",
-                )
-        else:
-            st.warning("No bills in the selected date range to generate a report.")
-
+    if 'filtered_df' in locals() and filtered_df.empty:
+        st.warning("No bills in the selected date range to generate a report.")
 
     st.dataframe(df_display, use_container_width=True)
     
