@@ -71,7 +71,7 @@ def fetch_doctors(_user_id):
 def fetch_bills(_user_id):
     """Fetches the list of bills from Supabase for the current user."""
     try:
-        response = supabase.table('bills').select('*').eq('user_id', _user_id).order('bill_date', desc=True).execute()
+        response = supabase.table('bills').select('*').order('bill_date', desc=True).execute()
         return response.data
     except Exception as e:
         st.error(f"Error fetching bills: {e}")
