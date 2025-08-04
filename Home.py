@@ -1,17 +1,37 @@
 import streamlit as st
 
-# --- Page Configuration for Login Page ---
-st.set_page_config(
-    page_title="Home Login",
-    page_icon="🏠",
-    layout="centered"
-)
+# --- Page Configuration ---
+# We set the page config based on the login status to hide/show the sidebar.
+
+# Initialize session state
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+def configure_page():
+    """Sets the page configuration based on login status."""
+    if st.session_state.logged_in:
+        # Show the sidebar on the dashboard page
+        st.set_page_config(
+            page_title="Home Automation Dashboard",
+            page_icon="🚀",
+            layout="centered",
+            initial_sidebar_state="expanded"
+        )
+    else:
+        # Hide the sidebar on the login page
+        st.set_page_config(
+            page_title="Home Automation Login",
+            page_icon="🏠",
+            layout="centered",
+            initial_sidebar_state="collapsed"
+        )
+
+# Call the function to set the page config at the start
+configure_page()
+
 
 def check_login():
     """Displays a login form and returns True if the user is logged in."""
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-
     # If not logged in, show the login form
     if not st.session_state.logged_in:
         st.title("🏠 Home Login")
@@ -25,7 +45,7 @@ def check_login():
                 # Check for the correct username and password
                 if username == "AutoB4" and password == "P@ssw0rd":
                     st.session_state.logged_in = True
-                    st.rerun()  # Rerun the script to show the dashboard
+                    st.rerun()  # Rerun the script to re-evaluate and show the dashboard
                 else:
                     st.error("Incorrect username or password")
         return False
