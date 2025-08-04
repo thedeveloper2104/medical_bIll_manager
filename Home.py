@@ -2,7 +2,7 @@ import streamlit as st
 
 # --- Page Configuration for Login Page ---
 st.set_page_config(
-    page_title="Home Automation Login",
+    page_title="Home Login",
     page_icon="🏠",
     layout="centered"
 )
@@ -14,7 +14,7 @@ def check_login():
 
     # If not logged in, show the login form
     if not st.session_state.logged_in:
-        st.title("🏠 Home Automation Universal Login")
+        st.title("🏠 Home Login")
         
         with st.form("login_form"):
             username = st.text_input("Username", key="login_username")
@@ -36,7 +36,7 @@ def check_login():
 # --- Main Logic ---
 # If the user is successfully logged in, show the dashboard.
 if check_login():
-    st.title("🚀 Home Automation Dashboard")
+    st.title("🚀 Dashboard")
     st.header("Welcome!")
     
     st.markdown("""
