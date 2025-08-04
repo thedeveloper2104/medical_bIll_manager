@@ -84,15 +84,24 @@ def generate_pdf(dataframe):
     # Table Rows
     pdf.set_font("Arial", '', 10)
     for index, row in dataframe.iterrows():
-        pdf.cell(col_widths[0], 10, str(index + 1), border=1)
-        pdf.cell(col_widths[1], 10, str(row['vendor_name']), border=1)
-        pdf.cell(col_widths[2], 10, str(row['bill_no']), border=1)
-        pdf.cell(col_widths[3], 10, str(row['bill_date']), border=1)
-        pdf.cell(col_widths[4], 10, f"${row['bill_amount']:.2f}", border=1)
-        pdf.cell(col_widths[5], 10, str(row['doctor_name']), border=1)
+        # Ensure data is string before passing to cell
+        s_no = str(index + 1)
+        vendor = str(row.get('vendor_name', ''))
+        bill_no = str(row.get('bill_no', ''))
+        bill_date = str(row.get('bill_date', ''))
+        amount = f"${row.get('bill_amount', 0.0):.2f}"
+        doctor = str(row.get('doctor_name', ''))
+
+        pdf.cell(col_widths[0], 10, s_no, border=1)
+        pdf.cell(col_widths[1], 10, vendor, border=1)
+        pdf.cell(col_widths[2], 10, bill_no, border=1)
+        pdf.cell(col_widths[3], 10, bill_date, border=1)
+        pdf.cell(col_widths[4], 10, amount, border=1)
+        pdf.cell(col_widths[5], 10, doctor, border=1)
         pdf.ln()
         
-    return pdf.output(dest='S').encode('latin1')
+    # The output method returns bytes, no encoding is needed.
+    return pdf.output()
 
 def extract_bill_details_with_gemini(image_bytes):
     """Uses Gemini API to extract details from a bill image."""
