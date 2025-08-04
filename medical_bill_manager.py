@@ -100,7 +100,7 @@ def generate_pdf(dataframe):
         pdf.cell(col_widths[5], 10, doctor, border=1)
         pdf.ln()
         
-    # Return the PDF as bytes, which is required by st.download_button
+    # FIX: Return the PDF as bytes, which is required by st.download_button.
     # The .output() method with no arguments returns the correct bytes format.
     return pdf.output()
 
