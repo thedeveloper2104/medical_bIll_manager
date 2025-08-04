@@ -89,7 +89,7 @@ def generate_pdf(dataframe):
         vendor = str(row.get('vendor_name', '')).encode('latin-1', 'replace').decode('latin-1')
         bill_no = str(row.get('bill_no', '')).encode('latin-1', 'replace').decode('latin-1')
         bill_date = str(row.get('bill_date', ''))
-        amount = f"₹{row.get('bill_amount', 0.0):.2f}"
+        amount = f"Rs{row.get('bill_amount', 0.0):.2f}"
         doctor = str(row.get('doctor_name', '')).encode('latin-1', 'replace').decode('latin-1')
 
         pdf.cell(col_widths[0], 10, s_no, border=1)
